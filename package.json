@@ -3,10 +3,12 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "start": "next start"
+    "start": "next start",
+    "seed": "node -r dotenv/config ./scripts/seed.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
+    "@prisma/client": "^5.5.2",
     "@tailwindcss/forms": "^0.5.6",
     "@types/node": "20.5.7",
     "@vercel/postgres": "^0.5.0",
@@ -17,6 +19,7 @@
     "postcss": "8.4.31",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "serverless-mysql": "^1.5.5",
     "tailwindcss": "3.3.3",
     "typescript": "5.2.2",
     "zod": "^3.22.2"
@@ -28,7 +31,8 @@
     "dotenv": "^16.3.1",
     "eslint": "^8.52.0",
     "eslint-config-next": "^14.0.0",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "prisma": "^5.5.2"
   },
   "engines": {
     "node": ">=18"
