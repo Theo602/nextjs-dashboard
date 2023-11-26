@@ -8,6 +8,7 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore  as noStore } from 'next/cache';
+import { type } from 'os';
 
 export async function fetchRevenue() {
   noStore();
@@ -100,7 +101,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await prisma.$queryRaw<InvoicesTable>`
+    const invoices = await prisma.$queryRaw<InvoicesTable[]>`
       SELECT
         invoice.id,
         invoice.amount,
@@ -112,11 +113,11 @@ export async function fetchFilteredInvoices(
       FROM invoice
       JOIN customer ON invoice.customerId = customer.id
       WHERE
-        customer.name ILIKE ${`%${query}%`} OR
-        customer.email ILIKE ${`%${query}%`} OR
-        invoice.amount::text ILIKE ${`%${query}%`} OR
-        invoice.date::text ILIKE ${`%${query}%`} OR
-        invoice.status ILIKE ${`%${query}%`}
+        customer.name LIKE ${`%${query}%`} OR
+        customer.email LIKE ${`%${query}%`} OR
+        invoice.amount LIKE ${`%${query}%`} OR
+        invoice.date LIKE ${`%${query}%`} OR
+        invoice.status LIKE ${`%${query}%`}
       ORDER BY invoice.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
@@ -130,19 +131,23 @@ export async function fetchFilteredInvoices(
 
 export async function fetchInvoicesPages(query: string) {
   noStore();
+ 
   try {
-    const count = await prisma.$queryRaw<number>`SELECT COUNT(*)
+    
+    const count = await prisma.$queryRaw<any>`SELECT COUNT(*) AS count
     FROM invoice
     JOIN customer ON invoice.customerId = customer.id
     WHERE
-      customer.name ILIKE ${`%${query}%`} OR
-      customer.email ILIKE ${`%${query}%`} OR
-      invoice.amount::text ILIKE ${`%${query}%`} OR
-      invoice.date::text ILIKE ${`%${query}%`} OR
-      invoice.status ILIKE ${`%${query}%`}
+      customer.name LIKE ${`%${query}%`} OR
+      customer.email LIKE ${`%${query}%`} OR
+      invoice.amount LIKE ${`%${query}%`} OR
+      invoice.date LIKE ${`%${query}%`} OR
+      invoice.status LIKE ${`%${query}%`}
+ 
   `;
 
-    const totalPages = Math.ceil(Number(count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(count[0].count) / ITEMS_PER_PAGE);
+
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
