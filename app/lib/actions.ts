@@ -26,14 +26,20 @@ export async function createInvoice(formData: FormData) {
     const amountInCents = amount * 100;
     const date = new Date().toISOString().split('T')[0];
 
-    await prisma.invoice.create({
-        data: {
-            customerId: customerId,
-            amount: amountInCents,
-            status: status,
-            date: date
-        }
-    });
+    try{
+        await prisma.invoice.create({
+            data: {
+                customerId: customerId,
+                amount: amountInCents,
+                status: status,
+                date: date
+            }
+        });
+    } catch(error) {
+        return {
+            message: 'Database Error: Failed to Create Invoice.',
+        };
+    }
 
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
@@ -48,28 +54,42 @@ export async function updateInvoice(id: number, formData: FormData) {
 
     const amountInCents = amount * 100;
 
-    await prisma.invoice.update({
-        where: {
-            id: id
-        },
-        data: {
-            customerId: customerId,
-            amount: amountInCents,
-            status: status,
-        }
-    });
+    try {
+
+        await prisma.invoice.update({
+            where: {
+                id: id
+            },
+            data: {
+                customerId: customerId,
+                amount: amountInCents,
+                status: status,
+            }
+        });
+
+    } catch(error) {
+        return {
+            message: 'Database Error: Failed to Update Invoice.',
+        };
+    }
     
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
 }
 
 export async function deleteInvoice(id: number) {
-
-    await prisma.invoice.delete({
-        where: {
-            id: id
-        }
-    })
+     
+    try {
+        await prisma.invoice.delete({
+            where: {
+                id: id
+            }
+        })
+    } catch(error) {
+        return {
+            message: 'Database Error: Failed to Delete Invoice.',
+        };
+    }
 
     revalidatePath('/dashboard/invoices');
 }
