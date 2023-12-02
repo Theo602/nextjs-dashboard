@@ -155,7 +155,7 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
-export async function fetchInvoiceById(id: string) {
+export async function fetchInvoiceById(id: number) {
   noStore();
   try {
     const data = await prisma.$queryRaw<InvoiceForm[]>`
@@ -212,8 +212,8 @@ export async function fetchFilteredCustomers(query: string) {
 		FROM customer
 		LEFT JOIN invoice ON customer.id = invoice.customerId
 		WHERE
-		  customer.name ILIKE ${`%${query}%`} OR
-        customer.email ILIKE ${`%${query}%`}
+		  customer.name LIKE ${`%${query}%`} OR
+        customer.email LIKE ${`%${query}%`}
 		GROUP BY customer.id, customer.name, customer.email, customer.image_url
 		ORDER BY customer.name ASC
 	  `;
