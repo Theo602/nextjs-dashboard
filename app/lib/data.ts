@@ -198,7 +198,14 @@ export async function fetchCustomers() {
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+export async function fetchFilteredCustomers(
+  query: string,
+  currentPage: number,
+  ) {
+  noStore();
+  
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  
   try {
     const data = await prisma.$queryRaw<CustomersTable[]>`
 		SELECT
@@ -213,13 +220,15 @@ export async function fetchFilteredCustomers(query: string) {
 		LEFT JOIN invoice ON customer.id = invoice.customerId
 		WHERE
 		  customer.name LIKE ${`%${query}%`} OR
-        customer.email LIKE ${`%${query}%`}
+      customer.email LIKE ${`%${query}%`}
 		GROUP BY customer.id, customer.name, customer.email, customer.image_url
 		ORDER BY customer.name ASC
+    LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
 	  `;
 
     const customers = data.map((customer) => ({
       ...customer,
+      total_invoices: Number(customer.total_invoices),
       total_pending: formatCurrency(customer.total_pending),
       total_paid: formatCurrency(customer.total_paid),
     }));
@@ -230,6 +239,34 @@ export async function fetchFilteredCustomers(query: string) {
     throw new Error('Failed to fetch customer table.');
   }
 }
+
+export async function fetchCustomersPages(query: string) {
+  noStore();
+ 
+  try {
+    
+    const count = await prisma.$queryRaw<any>`SELECT COUNT(*) AS count
+		FROM customer
+    WHERE
+      customer.name LIKE ${`%${query}%`} OR
+      customer.email LIKE ${`%${query}%`} 
+  `;
+
+    const totalPages = Math.ceil(Number(count[0].count) / ITEMS_PER_PAGE);
+
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of invoices.');
+  }
+}
+
+
+
+
+
+
+
 
 export async function getUser(email: string) {
   try {
